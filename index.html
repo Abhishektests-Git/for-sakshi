@@ -2842,15 +2842,6 @@
         transition: opacity 0.35s ease;
       }
       #orbCaptionBar.orb-show { opacity: 1; }
-      #orbCaptionTitle {
-        font-size: 0.78rem;
-        letter-spacing: 0.22em;
-        text-transform: uppercase;
-        font-weight: 500;
-        color: #a3335f;
-        margin: 0 0 0.15rem;
-        line-height: 1.5;
-      }
       #orbCaptionText {
         font-family: "Great Vibes", cursive;
         font-size: 1.55rem;
@@ -2877,7 +2868,7 @@
       }
       .orb-credit .orb-by { color: var(--deep); }
       /* Large view (plain, as in the orbit build): rounded card,
-         face-centred square photo, title + caption, close via the
+         face-centred square photo and that photo's own caption, close via the
          x button, the backdrop, or Escape. */
       #orbModal {
         position: fixed;
@@ -2936,15 +2927,6 @@
       }
       .orb-modal-close:hover { background: rgba(0, 0, 0, 0.5); }
       .orb-modal-body { padding: 1rem 1.25rem 1.25rem; text-align: center; overflow: auto; }
-      .orb-modal-title {
-        margin: 0 0 0.3rem;
-        font-size: 0.75rem;
-        letter-spacing: 0.25em;
-        text-transform: uppercase;
-        font-weight: 500;
-        color: #a3335f;
-        line-height: 1.5;
-      }
       .orb-modal-cap { margin: 0; font-size: 0.95rem; line-height: 1.55; color: #99516f; }
       @media (prefers-reduced-motion: reduce) {
         .orb-node { transition: none; }
@@ -3711,7 +3693,6 @@
             </div>
             <p class="orb-loading" id="orbLoading">Collecting our moments… ♡</p>
             <div id="orbCaptionBar" aria-live="polite">
-              <p id="orbCaptionTitle"></p>
               <p id="orbCaptionText"></p>
             </div>
             <p class="orb-hint">Drag to spin &nbsp;·&nbsp; Tap a photo</p>
@@ -3733,7 +3714,6 @@
             </button>
           </div>
           <div class="orb-modal-body">
-            <p class="orb-modal-title" id="orbModalTitle"></p>
             <p class="orb-modal-cap" id="orbModalCap"></p>
           </div>
         </div>
@@ -6595,26 +6575,174 @@
         if (!section || !sphereEl) return;
         var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-        var captions = ["When everything felt right for the first time.",
-        "The moment I knew I wanted to see it every day.",
-        "Where we talked until the world disappeared.",
-        "Staying up just to hear your voice a little longer.",
-        "My favorite sound in the whole world.",
-        "When I realized home isn't a place, it's you.",
-        "How they light up when you talk about what you love.",
-        "Dancing in the kitchen like no one's watching.",
-        "Getting lost together and finding our way back.",
-        "The simplest thing that means everything.",
-        "How you make everyone around you feel special.",
-        "The best choice I ever made.",
-        "A lovely memory to cherish forever."];
+        /* Per-photo captions: photo N (assets/orbit-N.webp) always
+           shows CAPTIONS[N - 1] — its own short message written for
+           that photo — in the line under the sphere and in the
+           tap-to-open large view. There is no shared caption pool
+           and no "Memory N" title any more, so nothing repeats on
+           a cycle and every photo speaks for itself. */
+        var CAPTIONS = [
+          "Flowers and that shy smile 🌸",
+          "Lift mirror, full diva mode ✨",
+          "Lost in the crowd, still shining 🌟",
+          "All dressed up, together 💛",
+          "Maroon magic at midnight 🌙",
+          "Walking like a movie scene 🎬",
+          "Sitting pretty, golden hour ☀️",
+          "Pink saree, softest mood 🌷",
+          "Red tee, brighter smile ❤️",
+          "Same red, double the cute 😊",
+          "Close-up of my favourite face 💗",
+          "Black dress, bold heart 🖤",
+          "Purple dreams 💜",
+          "That selfie glow ✨",
+          "Her and the endless sea 🌊",
+          "Sea breeze and her 🌊",
+          "Sunglasses on, worries off 😎",
+          "Queen of the coastline 👑",
+          "Night, boats and her ✨",
+          "Quiet moments, pretty soul 🌙",
+          "Café dates with herself ☕",
+          "Bleachers under the stars 🌟",
+          "Cooking up something sweet 🍲",
+          "Sunflowers and slow pages 🌻",
+          "Mehndi and new beginnings 🌿",
+          "Sofa, smiles and zero plans 😌",
+          "Table for one, shining anyway ✨",
+          "Eating happy, looking happier 😋",
+          "Riverside in mint green 🌿",
+          "That riverside smile 🌊",
+          "Minty fresh and glowing ✨",
+          "Standing where the land ends 🌊",
+          "Sunset chaser 🌅",
+          "Feet in the river, heart full 💙",
+          "Pink skies and boat rides 🚤",
+          "White dress, city lights ✨",
+          "My favourite person, caught off guard 📸",
+          "Grace, standing tall 🌸",
+          "A rose, a night, us 🌹",
+          "Night walks, hand in hand 🌙",
+          "A bouquet as big as her smile 💐",
+          "Cap on, flowers out 🌻",
+          "Turning back for one more 📸",
+          "Bouquet day by the river 💐",
+          "Flowers by the water 🌊",
+          "Holding sunshine up high 🌻",
+          "Profile of a daydream 💭",
+          "Hugging her sunshine 🌻",
+          "Flowers first, questions later 💐",
+          "Moody and magnificent 🌙",
+          "Night rides and city lights 🏍️",
+          "Black dress café diaries ☕",
+          "Sitting like she owns it ✨",
+          "Coffee in hand, sparkle on ☕",
+          "Chin up, cutie 🌸",
+          "Checking her phone, stealing hearts 📱",
+          "Sip, smile, repeat ☕",
+          "That café laugh 😄",
+          "Market nights and her 🌙",
+          "A little surprise in her hands 🎁",
+          "He brought the sunshine 🌻",
+          "Sofa, sunflowers and her 🌻",
+          "Carrying sunshine around 🌻",
+          "Sunflowers at dusk 🌆",
+          "Bright halls, brighter her ✨",
+          "Sunflowers on the table 🌻",
+          "Swing, snacks and us 💛",
+          "First bite happiness 😋",
+          "Dinner, but make it pretty 🍽️",
+          "Hair goals, honestly ✨",
+          "My favourite smile, after hers 😄",
+          "Saree and city sparkle ✨",
+          "Dancing through the fest night 💃",
+          "Cheers to her 🥂",
+          "Lost in the music 🎶",
+          "Crowd's favourite girl 🌟",
+          "Stage lights love her 🎤",
+          "Lift diaries, part one 🪞",
+          "Lift diaries, part two 🪞",
+          "Full-length fabulous ✨",
+          "Mirror, mirror, prettiest of all 🪞",
+          "Lobby looks 🌸",
+          "Makeup on point 💄",
+          "Selfie queen strikes again 🤳",
+          "Table-side glow ✨",
+          "Rooftop evenings done right 🌆",
+          "A toast to this view 🥂",
+          "Green saree, golden night 💚",
+          "Wicker chair royalty 👑",
+          "Poolside in a saree 🌊",
+          "Walking on moonlight 🌙",
+          "One more selfie, why not 🤳",
+          "Coffee and calm ☕",
+          "Stripes and chill vibes 😌",
+          "Same spot, new pose ✨",
+          "Standing tall, coffee in hand ☕",
+          "Café corners and her ☕",
+          "Warm cup, warmer smile ☕",
+          "Profile of pretty 🌸",
+          "Lost in her phone 📱",
+          "Mirror check: flawless 🪞",
+          "Mirror check: still flawless 🪞",
+          "Bridge nights and her 🌉",
+          "Leaning into the night 🌙",
+          "City lights, her spotlight ✨",
+          "Garden nights 💚",
+          "Green walls, black dress 🖤",
+          "Night selfie sparkle ✨",
+          "Dark, dreamy, her 🌙",
+          "Red walls, bold her ❤️",
+          "Colourful corners 🌈",
+          "Florals and her 🌸",
+          "Bleachers, again — her spot 🌟",
+          "Floral dress, fresh air 🌼",
+          "Bench, breeze and her 🍃",
+          "Silhouette by the sunset sea 🌅",
+          "Bike night, brave heart 🏍️",
+          "Night air, don't care 🌙",
+          "Steps, stars and her ✨",
+          "Cheek-resting cutie 💗",
+          "Two wheels, full heart 🏍️",
+          "Bamboo café mornings ☕",
+          "Maroon mood 💜",
+          "Pit stop, pretty as ever ✨",
+          "Saree in the mirror, part one 🪞",
+          "Saree in the mirror, part two 🪞",
+          "One more mirror twirl 💃",
+          "Sitting on the city's edge 🌉",
+          "Streetlights and her ✨",
+          "That midnight smile 🌙",
+          "Her trusty red scooter 🛵",
+          "Yellow scarf, sea selfie 🌊",
+          "Bouquet day, again — lucky her 💐",
+          "Outdoor glow-up ✨",
+          "He and the sunflowers 🌻",
+          "Brown dress, soft day 🌸",
+          "Jacket on, attitude on 😎",
+          "Yellow blooms at night 🌼",
+          "Her favourite green seats 🌟",
+          "Traditional and timeless 💛",
+          "Stripes and sunshine ☀️",
+          "Flowers under the streetlights 🌙",
+          "Green top, night glow 💚",
+          "Cheek kisses and us 💗",
+          "Bleachers under fairy lights ✨",
+          "Sofa days are good days 🛋️",
+          "Upside-down goofball 😜",
+          "All the flowers, all for her 💐",
+          "Lying down, laughing together 😄",
+          "Maroon on the bleachers 🌸",
+          "Night seats, bright her 🌟",
+          "Side profile, star quality ✨",
+          "Fences and fairy lights 🌙",
+          "Head back, laughing loud 😂"
+        ];
         var IMAGES = [];
         for (var i = 1; i <= 154; i++) {
           IMAGES.push({
             src: "assets/orbit-" + i + ".webp",
-            alt: "Memory " + i + " photo",
-            title: "Memory " + i,
-            description: captions[(i - 1) % captions.length]
+            alt: CAPTIONS[i - 1],
+            caption: CAPTIONS[i - 1]
           });
         }
         /* Face-centre positions (percent x, y) from the YuNet face scan
@@ -6661,7 +6789,6 @@
 
           var innerEl = document.getElementById("orbInner");
           var captionBar = document.getElementById("orbCaptionBar");
-          var captionTitle = document.getElementById("orbCaptionTitle");
           var captionText = document.getElementById("orbCaptionText");
 
           var rotation = { x: 15, y: 15 };
@@ -6731,7 +6858,7 @@
           IMAGES.forEach(function (img, idx) {
             var d = document.createElement("div");
             d.className = "orb-node";
-            d.setAttribute("aria-label", img.title + " — " + img.description);
+            d.setAttribute("aria-label", img.caption);
             d.setAttribute("aria-hidden", "true");
             var f = document.createElement("div");
             f.className = "orb-frame";
@@ -6759,8 +6886,7 @@
           });
 
           function showCaption(idx) {
-            captionTitle.textContent = IMAGES[idx].title;
-            captionText.textContent = IMAGES[idx].description;
+            captionText.textContent = IMAGES[idx].caption;
             captionBar.classList.add("orb-show");
           }
           function setHovered(idx) {
@@ -7011,14 +7137,12 @@
           /* Large view */
           var modal = document.getElementById("orbModal");
           var modalImg = document.getElementById("orbModalImg");
-          var modalTitle = document.getElementById("orbModalTitle");
           var modalCap = document.getElementById("orbModalCap");
           function openModal(idx) {
             modalImg.src = IMAGES[idx].src;
             modalImg.style.objectPosition = focalPos(idx + 1);
             modalImg.alt = IMAGES[idx].alt;
-            modalTitle.textContent = IMAGES[idx].title;
-            modalCap.textContent = IMAGES[idx].description;
+            modalCap.textContent = IMAGES[idx].caption;
             showCaption(idx);
             modal.classList.add("orb-open");
           }
